@@ -1,0 +1,15 @@
+data/*
+model
+gpt2
+bert-base-uncased
+cache
+output
+__pycache__
+
+*/__pycache__/*
+*/.ipynb_checkpoints/*
+*/.DS_Store
+*/.ipynb_checkpoints/*
+*/.idea/*
+*/.vscode/*
+*/.pytest
