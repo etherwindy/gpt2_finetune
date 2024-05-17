@@ -34,7 +34,7 @@ for index, row in tqdm(test_data.iterrows(), total=test_data.shape[0]):
     full_text = f"The lyrics of \"{row.iloc[1]}\":\n\n{row.iloc[3]}"
     splited_text = full_text.split("\n\n")
     input_text = "\n\n".join(splited_text[:-1]) + "\n"
-    reference_text = splited_text.split("\n\n")[-1]
+    reference_text = splited_text[-1]
 
     input_len = len(tokenizer.tokenize(input_text))
     if input_len + 100> 1024:
@@ -54,9 +54,9 @@ for index, row in tqdm(test_data.iterrows(), total=test_data.shape[0]):
     original_output_text = original_output_text.split("\n\n")[0]
     fintuned_output_text = fintuned_output_text.split("\n\n")[0]
     
-    if original_output_text.strip() == "" or fintuned_output_text.strip() == "" or reference_text.strip() == "":
-        print(index, "empty output")
-        continue
+    #if original_output_text.strip() == "" or fintuned_output_text.strip() == "" or reference_text.strip() == "":
+    #    print(index, "empty output")
+    #    continue
     
     reference_texts.append(reference_text)
     original_output_texts.append(original_output_text)
