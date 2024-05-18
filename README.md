@@ -2,11 +2,11 @@
 
 ## 数据准备
 
-数据集使用 [Song lyrics from 79 musical genres](https://www.kaggle.com/datasets/neisse/scrapped-lyrics-from-6-genres)。数据集包含了歌名、歌词等信息
+数据集使用 [Song lyrics from 79 musical genres](https://www.kaggle.com/datasets/neisse/scrapped-lyrics-from-6-genres)。数据集包含了歌名、歌词等信息。将数据集中的 `lyrics-data.csv` 文件放在 `data/lyrics/` 文件夹下。
 
 ## 数据处理
 
-从数据集中剔除了非英文歌词，并在输入文本之前加入了 `"The lyrics of {name of each song}"` 字段来提示输入文本为歌词。提示字段和正文空一行。数据集最后 500 个样本为测试样本，其余为训练样本
+从数据集中剔除了非英文歌词，并在输入文本之前加入了 `"The lyrics of {name of each song}"` 字段来提示输入文本为歌词。提示字段和正文空一行。数据集最后 500 个样本为测试样本，其余为训练样本。
 
 ## 训练参数
 
@@ -16,6 +16,8 @@ block_size = 1024
 lr = 3e-5
 batch_size = 4
 ```
+
+使用 4090 单卡进行训练大概需要三个小时。
 
 ## 测试
 
@@ -39,3 +41,7 @@ BERT Socre 包含 precision、recall 和 F1 score 三个指标
 | Recall | 0.3570 | 0.4687 |
 | F1 | 0.3734 | 0.4614 |
 | PPL | 23.48 | 13.97 |
+
+## 生成
+
+将输入文本写入 `input.txt`，运行 `generate.py` 即可。
