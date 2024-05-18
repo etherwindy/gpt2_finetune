@@ -20,17 +20,10 @@ test_data = df.iloc[-500:]
 
 input_texts = []
 
-for index, row in test_data.iterrows():
-    if row.iloc[4] != 'en':
-        continue
+file = open("input.txt", "r")
 
-    full_text = f"The lyrics of \"{row.iloc[1]}\":\n\n{row.iloc[3]}"
-    input_text = "\n\n".join(full_text.split("\n\n")[:-1]) + "\n"
-    if len(tokenizer.encode(input_text, return_tensors="pt")[0]) + 100 > 1024:
-        continue
-    input_texts.append(input_text)
-
-input_text = input_texts[2]
+input_text = file.read()
+file.close()
 
 print("Input text:")
 print(input_text)
