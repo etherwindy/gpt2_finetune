@@ -3,7 +3,7 @@ model
 gpt2
 bert-base-uncased
 cache
-output
+output*
 __pycache__
 
 */__pycache__/*

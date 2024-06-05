@@ -8,10 +8,10 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer, pipeline
 
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+tokenizer = GPT2Tokenizer.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
 
-original_model = GPT2LMHeadModel.from_pretrained('gpt2').to(device)
-fintuned_model = GPT2LMHeadModel.from_pretrained('model').to(device)
+original_model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/gpt2').to(device)
+fintuned_model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/model').to(device)
 
 df = pd.read_csv('data/lyrics/lyrics-data.csv')
 test_data = df.iloc[-500:]

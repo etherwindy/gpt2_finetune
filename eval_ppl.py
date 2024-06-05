@@ -50,9 +50,9 @@ for index, row in test_rows.iterrows():
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 # 计算原模型的PPL
-original_model_ppl = calculate_ppl('gpt2', test_data, device)
+original_model_ppl = calculate_ppl('/storage/nvme/gpt2_finetune/gpt2', test_data, device)
 print(f'Original model PPL: {original_model_ppl}')
 
 # 计算微调后模型的PPL
-fine_tuned_model_ppl = calculate_ppl('model', test_data, device)
+fine_tuned_model_ppl = calculate_ppl('/storage/nvme/gpt2_finetune/model', test_data, device)
 print(f'Fine-tuned model PPL: {fine_tuned_model_ppl}')

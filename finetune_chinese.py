@@ -1,6 +1,7 @@
 import torch
 from torch.optim import AdamW
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from transformers import BertTokenizer, GPT2LMHeadModel
+from datasets import load_dataset
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from transformers import get_linear_schedule_with_warmup
@@ -12,8 +13,7 @@ from tqdm import tqdm
 from tensorboardX import SummaryWriter
 
 # Load the GPT2 tokenizer and model
-tokenizer = GPT2Tokenizer.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
-tokenizer.pad_token = tokenizer.eos_token
+tokenizer = BertTokenizer.from_pretrained('/storage/nvme/gpt2_finetune/bert-base-uncased')
 model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
 
 # Load the dataset
@@ -31,16 +31,27 @@ class MyDataset(Dataset):
         block_size = block_size - self.tokenizer.num_special_tokens_to_add(pair=False)
         print("reading file: ", file_path)
                 
-        df = pd.read_csv(file_path)
-                
-        train_data = df.iloc[:-500]
-                
-        for index, row in train_data.iterrows():
-            if row.iloc[4] != 'en':
-                continue
-            text = f"The lyrics of \"{row.iloc[1]}\":\n\n{row.iloc[3]}"
-            tokenized_text = self.tokenizer.encode(text, padding="max_length", max_length=block_size, truncation=True)
-            self.examples.append(tokenized_text)
+        #df = pd.read_csv(file_path)
+        #        
+        #train_data = df.iloc[:-500]
+        #        
+        #for index, row in train_data.iterrows():
+        #    if row.iloc[4] != 'en':
+        #        continue
+        #    text = f"The lyrics of \"{row.iloc[1]}\":\n\n{row.iloc[3]}"
+        #    tokenized_text = self.tokenizer.encode(text, padding="max_length", max_length=block_size, truncation=True)
+        #    self.examples.append(tokenized_text)
+
+        # 从 json 读取数据
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            for item in tqdm(data, desc="Reading data"):
+                if item['output'] is None:
+                    continue
+                text = item['output']
+                tokenized_text = self.tokenizer.encode(text, padding="max_length", max_length=block_size, truncation=True)
+                self.examples.append(tokenized_text)
+        
         print("number of examples: ", len(self.examples))
 
     def __len__(self):
@@ -53,7 +64,7 @@ class MyDataset(Dataset):
 
 def train(epoch, model, device, loader, optimizer, scheduler, logger):
     model.train()
-    for idx, data in tqdm(enumerate(loader), total=len(loader)):
+    for idx, data in tqdm(enumerate(loader), total=len(loader), desc="epoch %d" % epoch):
         data = data.to(device)
         outputs = model(data, labels=data)
         loss, logits = outputs[:2]
@@ -69,14 +80,14 @@ device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 # Set the hyperparameters
 
-file_path = "data/lyrics/lyrics-data.csv"
-output_dir = "output"
-model_dir = "model"
-epoch = 1
+file_path = "data/news/RenMinDaily_clean.json"
+output_dir = "output_chinese"
+model_dir = "/storage/nvme/gpt2_finetune/model_chinese"
+epoch = 3
 block_size = 1024
-lr = 3e-5
+lr = 5e-5
 batch_size = 4
-gradient_accumulation_steps = 4
+gradient_accumulation_steps = 8
 max_grad_norm = 1.0
 
 # Load the dataset

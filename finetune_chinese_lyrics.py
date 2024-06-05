@@ -1,6 +1,7 @@
 import torch
 from torch.optim import AdamW
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from transformers import BertTokenizer, GPT2LMHeadModel
+from datasets import load_dataset
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from transformers import get_linear_schedule_with_warmup
@@ -12,9 +13,8 @@ from tqdm import tqdm
 from tensorboardX import SummaryWriter
 
 # Load the GPT2 tokenizer and model
-tokenizer = GPT2Tokenizer.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
-tokenizer.pad_token = tokenizer.eos_token
-model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
+tokenizer = BertTokenizer.from_pretrained('/storage/nvme/gpt2_finetune/gpt2-chinese-cluecorpussmall')
+model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/gpt2-chinese-cluecorpussmall')
 
 # Load the dataset
 
@@ -29,18 +29,18 @@ class MyDataset(Dataset):
         tokenizer.padding_side='right'
 
         block_size = block_size - self.tokenizer.num_special_tokens_to_add(pair=False)
-        print("reading file: ", file_path)
+        print("reading files: ", file_path)
                 
-        df = pd.read_csv(file_path)
-                
-        train_data = df.iloc[:-500]
-                
-        for index, row in train_data.iterrows():
-            if row.iloc[4] != 'en':
+        for singer in tqdm(os.listdir(file_path), desc="Reading data"):
+            if not os.path.isdir(os.path.join(file_path, singer)):
                 continue
-            text = f"The lyrics of \"{row.iloc[1]}\":\n\n{row.iloc[3]}"
-            tokenized_text = self.tokenizer.encode(text, padding="max_length", max_length=block_size, truncation=True)
-            self.examples.append(tokenized_text)
+            for song in os.listdir(os.path.join(file_path, singer)):
+                with open(os.path.join(file_path, singer, song), 'r') as f:
+                    data = f.read()
+                    data = data.replace("\n\n", "。").replace("\n", "。").replace(" ", "，")
+                    tokenized_text = self.tokenizer.encode(data, padding="max_length", max_length=block_size, truncation=True)
+                    self.examples.append(tokenized_text)
+        
         print("number of examples: ", len(self.examples))
 
     def __len__(self):
@@ -53,7 +53,7 @@ class MyDataset(Dataset):
 
 def train(epoch, model, device, loader, optimizer, scheduler, logger):
     model.train()
-    for idx, data in tqdm(enumerate(loader), total=len(loader)):
+    for idx, data in tqdm(enumerate(loader), total=len(loader), desc="epoch %d" % epoch):
         data = data.to(device)
         outputs = model(data, labels=data)
         loss, logits = outputs[:2]
@@ -69,9 +69,9 @@ device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 # Set the hyperparameters
 
-file_path = "data/lyrics/lyrics-data.csv"
-output_dir = "output"
-model_dir = "model"
+file_path = "data/Chinese_Lyrics"
+output_dir = "output_chinese_lyrics"
+model_dir = "/storage/nvme/gpt2_finetune/model_chinese_lyrics"
 epoch = 1
 block_size = 1024
 lr = 3e-5

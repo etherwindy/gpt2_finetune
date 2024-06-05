@@ -2,13 +2,16 @@ import torch
 import csv
 import pandas as pd
 from torch.nn import functional as F
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, pipeline
+from transformers import GPT2LMHeadModel, GPT2Tokenizer, BertTokenizer, pipeline
 
 # Load the GPT2 tokenizer and model
-tokenizer = GPT2Tokenizer.from_pretrained('/storage/nvme/gpt2_finetune/model')
+tokenizer = BertTokenizer.from_pretrained('/storage/nvme/gpt2_finetune/model_chinese')
+
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
 # Load the model
-model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/model')
+model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/model_chinese')
 model.eval()
 
 # Set the device
@@ -20,10 +23,7 @@ test_data = df.iloc[-500:]
 
 input_texts = []
 
-file = open("input.txt", "r")
-
-input_text = file.read()
-file.close()
+input_text = "中国"
 
 print("Input text:")
 print(input_text)
@@ -33,10 +33,9 @@ text_len = len(tokenized_text[0])
    
 # Generate text
 generator = pipeline('text-generation', model=model, tokenizer=tokenizer, device=device)
-output = generator(input_text, max_length=text_len + 100, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
+output = generator(input_text, max_length=1024, num_return_sequences=1, pad_token_id=tokenizer.pad_token_id)
 
-text = output[0]['generated_text'][len(input_text):]
-text = text.split("\n\n")[0]
+text = output[0]['generated_text']
 
 print("Generated text:")
 print(text)
