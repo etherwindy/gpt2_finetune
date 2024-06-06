@@ -97,3 +97,15 @@ python eval_bertScore_chinese.py
 GPT-2 是一个自回归模型，最基础的功能只能生成文本，不能进行对话。为了使 GPT-2 模型能够对话，我们使用 NaturalConv 多轮中文对话数据集。我们给 BertTokenizer 和 gpt2-chinese-cluecorpussmall 添加了 [speaker1] 和 [speaker2] 两个 token，分别代表 user 和 bot。训练时我们参考([GitHub - thu-coai/CDial-GPT: A Large-scale Chinese Short-Text Conversation Dataset and Chinese pre-training dialog models](https://github.com/thu-coai/CDial-GPT))中的方法，给一次对话中的每条语句的前面轮流添加上述两个 token，并在每句话后面加上 [SEP] 表示说话结束，最后将所有语句拼接，开头加上[CLS]，形成一条数据。
 
 使用时用一个 history 数组保存对话历史。用户每次输入时，将输入语句添加到 history 中，然后使用和训练时一样的方法处理 history 中的语句，形成输入数据，并在最后添加 [speaker2] 以提示模型接下来轮到 bot 说话。得到模型的输出后按 [SEQ] 分割语句并找到模型生成的第一条语句作为模型生成的回答进行输出，并将该回答添加到 history 中。
+
+训练：
+
+```python
+python finetune_chinese_chat.py
+```
+
+生成：
+
+```python
+python generate_chinese_chat.py
+```
