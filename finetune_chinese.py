@@ -13,7 +13,7 @@ from tqdm import tqdm
 from tensorboardX import SummaryWriter
 
 # Load the GPT2 tokenizer and model
-tokenizer = BertTokenizer.from_pretrained('/storage/nvme/gpt2_finetune/bert-base-uncased')
+tokenizer = BertTokenizer.from_pretrained('/storage/nvme/gpt2_finetune/bert-base-chinese')
 model = GPT2LMHeadModel.from_pretrained('/storage/nvme/gpt2_finetune/gpt2')
 
 # Load the dataset

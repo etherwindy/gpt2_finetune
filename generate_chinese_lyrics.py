@@ -18,9 +18,6 @@ model.eval()
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
-df = pd.read_csv('data/lyrics/lyrics-data.csv')
-test_data = df.iloc[-500:]
-
 file = open("data/Chinese_Lyrics/SNH48_794014/爱情养成日记_31311411.txt", "r")
 
 input_text = file.read()
@@ -39,7 +36,7 @@ text_len = len(tokenized_text[0])
 generator = pipeline('text-generation', model=model, tokenizer=tokenizer, device=device)
 output = generator(input_text, max_length=1024, num_return_sequences=1, pad_token_id=tokenizer.pad_token_id, repetition_penalty=1.5)
 
-text = output[0]['generated_text']
+text = output[0]['generated_text'].replace(" ", "")
 
 print("Generated text:")
 print(text)

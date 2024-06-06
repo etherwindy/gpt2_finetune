@@ -45,3 +45,55 @@ BERT Socre 包含 precision、recall 和 F1 score 三个指标
 ## 生成
 
 将输入文本写入 `input.txt`，运行 `generate.py` 即可。
+
+更换 GPT-2 分词器使其能够应用于中文
+
+GPT-2 原本GPT2Tokenizer，是以字节为单位的字节对编码，而不是以中文的字或词为单位。对于英文，GPT2Tokenizer大部分时候是以单词为单位进行切分的，但是对中文则完全不同，有时候2个id代表一个中文字，有时候又是1个。这一奇怪的现象正是因为采用字节对编码的结果。
+
+考虑到上述问题，改用 BERTTokenizer 进行分词。BERTTokenizer 会先根据词表将汉字和标点符号逐个分隔，再转换为词嵌入向量。
+
+我们使用预训练过的 bert-base-chinese 模型的分词器进行分词，模型使用原版的 GPT-2 模型，在 [People&#x27;s Daily News | Kaggle](https://www.kaggle.com/datasets/concyclics/renmindaily) 数据集上微调，使 GPT-2 模型能够理解和生成中文。
+
+训练：
+
+```python
+python finetune_chinese.py
+```
+
+生成：
+
+```python
+python generate_chinese.py
+```
+
+生成时的输入文本在代码文件中修改。
+
+## GPT-2 中文数据集微调
+
+使用预训练的 gpt2-chinese-cluecorpussmall 模型，用 [GitHub - gaussic/Chinese-Lyric-Corpus: A Chinese lyric corpus which contains nearly 50,000 lyrics from 500 artists](https://github.com/gaussic/Chinese-Lyric-Corpus) 数据集进行微调，使 gpt2 模型能够生成中文。训练设置和英文类似。
+
+训练：
+
+```python
+python finetune_chinese_lyrics.py
+```
+
+生成：
+
+```python
+python generate_chinese_lyrics.py
+```
+
+生成时的输入文本在代码文件中修改。
+
+评估：
+
+```python
+python eval_bertScore_chinese.py
+```
+
+## 使用 GPT-2 模型制作 chatbot
+
+GPT-2 是一个自回归模型，最基础的功能只能生成文本，不能进行对话。为了使 GPT-2 模型能够对话，我们使用 NaturalConv 多轮中文对话数据集。我们给 BertTokenizer 和 gpt2-chinese-cluecorpussmall 添加了 [speaker1] 和 [speaker2] 两个 token，分别代表 user 和 bot。训练时我们参考([GitHub - thu-coai/CDial-GPT: A Large-scale Chinese Short-Text Conversation Dataset and Chinese pre-training dialog models](https://github.com/thu-coai/CDial-GPT))中的方法，给一次对话中的每条语句的前面轮流添加上述两个 token，并在每句话后面加上 [SEP] 表示说话结束，最后将所有语句拼接，开头加上[CLS]，形成一条数据。
+
+使用时用一个 history 数组保存对话历史。用户每次输入时，将输入语句添加到 history 中，然后使用和训练时一样的方法处理 history 中的语句，形成输入数据，并在最后添加 [speaker2] 以提示模型接下来轮到 bot 说话。得到模型的输出后按 [SEQ] 分割语句并找到模型生成的第一条语句作为模型生成的回答进行输出，并将该回答添加到 history 中。

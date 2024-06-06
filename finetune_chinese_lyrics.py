@@ -31,7 +31,7 @@ class MyDataset(Dataset):
         block_size = block_size - self.tokenizer.num_special_tokens_to_add(pair=False)
         print("reading files: ", file_path)
                 
-        for singer in tqdm(os.listdir(file_path), desc="Reading data"):
+        for singer in tqdm(os.listdir(file_path), desc="Reading data")[:-10]:
             if not os.path.isdir(os.path.join(file_path, singer)):
                 continue
             for song in os.listdir(os.path.join(file_path, singer)):

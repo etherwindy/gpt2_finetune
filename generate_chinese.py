@@ -23,7 +23,7 @@ test_data = df.iloc[-500:]
 
 input_texts = []
 
-input_text = "中国"
+input_text = "日月其迈，岁律更新。历史翻开新的一页，我们迎来新的一年。"
 
 print("Input text:")
 print(input_text)
@@ -35,7 +35,7 @@ text_len = len(tokenized_text[0])
 generator = pipeline('text-generation', model=model, tokenizer=tokenizer, device=device)
 output = generator(input_text, max_length=1024, num_return_sequences=1, pad_token_id=tokenizer.pad_token_id)
 
-text = output[0]['generated_text']
+text = output[0]['generated_text'].replace(" ", "")
 
 print("Generated text:")
 print(text)
